@@ -21,7 +21,7 @@ function CenterNavigationTrigger() {
     <div className="absolute inset-0 flex flex-col items-center justify-center z-30 pointer-events-none">
       {/* க்ளிக் செய்யக்கூடிய வகையில் pointer-events-auto சேர்க்கப்பட்டுள்ளது */}
       <button
-        onClick={() => navigate('/DestinyAboutCard')}
+        onClick={() => navigate('/here')}
         className="group flex flex-col items-center justify-center pointer-events-auto bg-transparent border-none outline-none focus:outline-none active:scale-95 transition-transform duration-200"
         aria-label="Click here to go to About Page"
       >
@@ -70,6 +70,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/here" element={<DestinyAboutCard/>}/>
           <Route path="/projects" element={<Projects />} />
           <Route path="/skills" element={<Skills />} />
           <Route path="/flames" element={<FlamesModal isOpen={true} onClose={() => window.location.href = '/'} />} />
