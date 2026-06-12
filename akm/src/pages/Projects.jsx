@@ -15,6 +15,13 @@ export default function Projects() {
       title: "3. Mobile Shop E-Commerce Platform",
       desc: "Built a responsive e-commerce platform for mobile accessories using Next.js, React, and MongoDB. Developed advanced Real-time Filtering & Search functionality.",
       tech: ["Next.js", "React", "MongoDB", "Tailwind CSS"]
+    },
+    // ✅ புதிதாக இணைக்கப்பட்டுள்ள உங்களுடைய Telegram Assistant Bot ப்ராஜெக்ட் விபரம்
+    {
+      title: "4. Multi-Language Intelligent Telegram Assistant Bot",
+      desc: "Developed an interactive Telegram Bot leveraging Node.js and Telegraf framework with full Localization support (EN, TA, Tanglish). Features user session state management, an automated FLAMES game logic, and integrated Nodemailer to automatically dispatch user lead data directly to Gmail in real-time.",
+      tech: ["Node.js", "Telegraf API", "Express.js", "Nodemailer", "JavaScript"],
+      link: "https://t.me/rakesh_akm_portfolio_bot"
     }
   ];
 
@@ -28,15 +35,14 @@ export default function Projects() {
         </h2>
       </div>
 
-      {/* 
-        மொபைல் வியூவில் ஸ்லைடராகவும் (Horizontal Paper Slide), 
-        டெஸ்க்டாப்பில் 2 Column கிரிட் வியூவாகவும் மாறும் கன்டைனர்.
+      {/* மாற்றம்: `scroll-smooth` மற்றும் `w-full` செட்டப் மூலம் 
+        மொபைல் ஸ்லைடர் தாவி ஓடுவது முற்றிலும் சரிசெய்யப்பட்டுள்ளது.
       */}
-      <div className="flex overflow-x-auto pb-6 pt-2 px-4 gap-6 snap-x snap-mandatory md:grid md:grid-cols-2 md:overflow-x-visible md:pb-0 md:px-0 scrollbar-hide">
+      <div className="w-full flex overflow-x-auto pb-6 pt-2 gap-6 snap-x snap-mandatory scroll-smooth md:grid md:grid-cols-2 md:overflow-x-visible md:pb-0 scrollbar-hide">
         {projs.map((p, idx) => (
           <div 
             key={idx} 
-            className="min-w-[85vw] sm:min-w-[70vw] md:min-w-0 snap-center bg-white border-2 border-black rounded-2xl p-6 flex flex-col justify-between hover:scale-[1.02] transition duration-300 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)] md:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-xl space-y-5 relative overflow-hidden"
+            className="w-[calc(100vw-32px)] md:w-full shrink-0 snap-start bg-white border-2 border-black rounded-2xl p-6 flex flex-col justify-between hover:scale-[1.02] transition duration-300 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)] md:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-xl space-y-5 relative overflow-hidden"
           >
             {/* புக் பேப்பர் எஃபெக்ட் தரும் கார்னர் ரிப்பன் (மொபைலுக்கு மட்டும்) */}
             <div className="absolute top-0 right-0 w-3 h-3 bg-zinc-300 rounded-bl-lg md:hidden shadow-inner" />
@@ -66,7 +72,7 @@ export default function Projects() {
                 ))}
               </div>
               
-              {/* லைவ் லிங்க் இருந்தால் மட்டும் காட்டும் */}
+              {/* லைவ் லிங்க் அல்லது பாட் லிங்க் இருந்தால் மட்டும் காட்டும் */}
               {p.link && (
                 <div className="pt-1">
                   <a 
@@ -75,7 +81,7 @@ export default function Projects() {
                     rel="noreferrer" 
                     className="text-xs font-black text-black underline underline-offset-2 hover:text-zinc-700 block transition-colors"
                   >
-                    Live Link &rarr;
+                    {p.title.includes("Telegram") ? "Launch Bot 🤖" : "Live Link"} &rarr;
                   </a>
                 </div>
               )}
