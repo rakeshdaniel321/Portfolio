@@ -67,7 +67,7 @@ export default function App() {
         {/* சோசியல் பார்கள் - இதன் உள்ளே லொகேஷன் செக் இருப்பதால், 
           மொபைலில் ஹோம் பேஜ் தவிர வேறு எங்கும் டாப்-ல் டூப்ளிகேட்டாகத் தெரியாது!
         */}
-        <SidebarSocials />
+        {/* <SidebarSocials /> */}
         
         {/* பேக் பட்டன் */}
         <GlobalBackButton />
@@ -84,6 +84,8 @@ export default function App() {
           <Route path="/skills" element={<Skills />} />
           <Route path="/flames" element={<FlamesModal isOpen={true} onClose={() => window.location.href = '/'} />} />
         </Routes>
+
+        <SidebarSocials /> 
 
         {/* குளோபல் இன்ஃபினைட் கலர் டெக்ஸ்ட் ஸ்டைல் */}
         <style>{`
