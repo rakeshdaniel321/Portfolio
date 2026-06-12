@@ -147,7 +147,7 @@ export default function FlamesModal({ isOpen, onClose }) {
           &times;
         </button>
         
-        <h3 className="infinite-color-text text-sm sm:text-lg font-mono font-black tracking-widest text-center mb-5 border-b border-white/10 pb-2.5 mt-2">// DESTINY BOX</h3>
+        <h3 className="infinite-color-text text-sm sm:text-lg font-mono font-black tracking-widest text-center mb-5 border-b border-white/10 pb-2.5 mt-2"> DESTINY BOX</h3>
         
         {!result ? (
           <form onSubmit={checkFlames} className="space-y-4 sm:space-y-6">
