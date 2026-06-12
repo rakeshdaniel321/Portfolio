@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-white text-black font-sans antialiased overflow-x-hidden;
+  }
+}
+
+/* Newspaper/Book Typography Effect */
+.newspaper-font {
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+/* Custom Red Title */
+.text-red-custom {
+  color: #ff0000;
+}
