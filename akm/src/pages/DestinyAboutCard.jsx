@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import SidebarSocials from '../components/SidebarSocials';
+
 import rakeshPic from '../assets/rakesh-pic.jpeg'; // உங்களது assets ஃபோல்டர் பாத்
 
 export default function DestinyAboutCard() {
@@ -12,7 +12,7 @@ export default function DestinyAboutCard() {
     <div className="min-h-screen bg-black text-white p-4 md:p-12 relative overflow-x-hidden overflow-y-auto selection:bg-red-600 selection:text-white">
       
      
-      <SidebarSocials />
+    
       
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         {heartsCount.map((_, index) => {

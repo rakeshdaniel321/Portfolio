@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import NameAnimation from '../components/NameAnimation';
-import SidebarSocials from '../components/SidebarSocials'; 
+
 export default function Home() {
   const navigate = useNavigate();
 
@@ -46,7 +46,6 @@ export default function Home() {
         </div>
 
        
-        <SidebarSocials />
       </div>
 
     </div>

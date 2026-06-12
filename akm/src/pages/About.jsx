@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import SidebarSocials from '../components/SidebarSocials';
+
 
 export default function About() {
   const navigate = useNavigate();
@@ -7,8 +7,6 @@ export default function About() {
   return (
     <div className="min-h-screen bg-black text-white p-3 md:p-12 relative overflow-x-hidden overflow-y-auto selection:bg-yellow-500 selection:text-black">
       
-      
-      <SidebarSocials />
       
       
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
