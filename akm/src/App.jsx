@@ -27,7 +27,7 @@ function CenterNavigationTrigger() {
       >
         {/* உங்கள் பெயர் - பெரிய மற்றும் தடிமனான பிரீமியம் எழுத்துக்களில் */}
         <h1 className="font-sans text-4xl md:text-5xl font-black uppercase tracking-wider text-white transition-colors duration-300 group-hover:text-red-500">
-         
+          {/* பெயர் தேவைப்பட்டால் இங்கே சேர்க்கலாம் */}
         </h1>
         
         {/* பெயருக்கு கீழே வரும் "click here" சிறிய உரைவடிவம் */}
@@ -39,6 +39,7 @@ function CenterNavigationTrigger() {
   );
 }
 
+// குளோபல் பேக் பட்டன் - ஹோம் மற்றும் பிளேம்ஸ் பக்கங்களில் தெரியாது
 function GlobalBackButton() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -60,22 +61,31 @@ export default function App() {
     <Router>
       <div className="min-h-screen bg-black text-white font-sans relative overflow-x-hidden select-none">
         
+        {/* அனிமேஷன் எஃபெக்ட்ஸ் */}
         <GoldCoins />
+        
+        {/* சோசியல் பார்கள் - இதன் உள்ளே லொகேஷன் செக் இருப்பதால், 
+          மொபைலில் ஹோம் பேஜ் தவிர வேறு எங்கும் டாப்-ல் டூப்ளிகேட்டாகத் தெரியாது!
+        */}
         <SidebarSocials />
+        
+        {/* பேக் பட்டன் */}
         <GlobalBackButton />
         
-        {/* உங்கள் பெயரைக் கொண்ட சென்ட்ரல் ட்ரிகர் */}
+        {/* சென்ட்ரல் "Click Here" ட்ரிகர் */}
         <CenterNavigationTrigger />
         
+        {/* ஆப் ரூட்டிங் செட்டப் */}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
-          <Route path="/here" element={<DestinyAboutCard/>}/>
+          <Route path="/here" element={<DestinyAboutCard />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/skills" element={<Skills />} />
           <Route path="/flames" element={<FlamesModal isOpen={true} onClose={() => window.location.href = '/'} />} />
         </Routes>
 
+        {/* குளோபல் இன்ஃபினைட் கலர் டெக்ஸ்ட் ஸ்டைல் */}
         <style>{`
           body {
             background-color: #000000 !important;
