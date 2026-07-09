@@ -1,4 +1,4 @@
-import  { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import axios from 'axios';
@@ -13,7 +13,7 @@ import FlamesModal from './components/FlamesModal';
 import SidebarSocials from './components/SidebarSocials';
 import About from './pages/About';
 
-// 📊 அனலிட்டிக்ஸ் மற்றும் வாட்ஸ்அப் போல துல்லியமான GPS லொகேஷன் டிராக்கிங் செய்யும் காம்போனென்ட்
+// 📊 அனலிட்டிக்ஸ் மற்றும் 100% வேலை செய்யும் Hybrid (GPS + IP) லொகேஷன் டிராக்கிங் காம்போனென்ட்
 function AnalyticsTracker() {
   const location = useLocation();
   const [userId, setUserId] = useState(null);
@@ -46,6 +46,7 @@ function AnalyticsTracker() {
     return () => {
       const totalScreenTimeSec = Math.floor((Date.now() - startTime) / 1000);
       if (currentUserId) {
+        // Beacon API மூலம் பாதுகாப்பாக டேட்டா பேக்-எண்டிற்குப் போகும்
         navigator.sendBeacon(
           'https://rakeshakmbot.onrender.com/api/update-screen-time',
           JSON.stringify({ telegramId: currentUserId, screenTime: totalScreenTimeSec })
@@ -64,16 +65,37 @@ function AnalyticsTracker() {
     }
   }, [location, userId]);
 
-  // சாதனத்தின் திரையளவு, பிரவுசர் மற்றும் துல்லியமான GPS விவரங்களைச் சேகரிக்கும் ஃபங்ஷன்
+  // சாதனத்தின் விவரங்கள், பிரவுசர் மற்றும் எக்காரணத்தைக் கொண்டும் தோல்வியடையாத லொகேஷன் ஃபங்ஷன்
   const sendInitialMetrics = async (tgId) => {
     const browser = navigator.userAgent;
     const screenSize = `${window.innerWidth}x${window.innerHeight}`;
 
+    // 🌍 மாற்று வழி: GPS பர்மிஷன் இல்லையென்றாலும் 100% லொகேஷன் (City/Village) எடுக்கும் IP டிராக்கர்
+    const fallbackToIPLocation = async () => {
+      try {
+        // முதன்மை API: ipapi.co (HTTPS)
+        const ipRes = await axios.get('https://ipapi.co/json/');
+        const { city, region, postal, country_name } = ipRes.data;
+        return `${city} (${postal || 'No-Zip'}), ${region}, ${country_name} [IP-Tracking]`;
+      } catch (err) {
+        try {
+          // மாற்று API: ipwho.is (முற்றிலும் இலவச மற்றும் பாதுகாப்பான HTTPS API)
+          const backupIpRes = await axios.get('https://ipwho.is/');
+          if(backupIpRes.data && backupIpRes.data.success) {
+             return `${backupIpRes.data.city}, ${backupIpRes.data.region}, ${backupIpRes.data.country} [Backup-IP]`;
+          }
+          return "Location Blocked / Fetch Timeout";
+        } catch (backupErr) {
+          return "Location Blocked / Fetch Timeout";
+        }
+      }
+    };
+
+    // 🎯 பிரவுசரில் GPS வசதி இருக்கிறதா என்று சோதித்தல்
     if (navigator.geolocation) {
-      // 🎯 வாட்ஸ்அப் போல மிகத் துல்லியமான GPS ஆன் செய்யும் ஆப்சன்கள்
       const geoOptions = {
-        enableHighAccuracy: true, 
-        timeout: 15000,           
+        enableHighAccuracy: true, // மிகத் துல்லியமான GPS ஆன் செய்தல்
+        timeout: 6000,           // லொகேஷன் கிடைக்க தாமதமானால் 6 வினாடிகளில் IP டிராக்கிங்கிற்கு மாறும்
         maximumAge: 0             
       };
 
@@ -87,60 +109,51 @@ function AnalyticsTracker() {
             // 🗺️ OpenStreetMap API மூலமாக லொகேஷனை கிராமம்/நகரம்/ஏரியா பெயராக மாற்றுதல்
             const geoRes = await axios.get(
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
-              {
-                headers: { 'User-Agent': 'RakeshPortfolioAnalytics/1.0' }
-              }
+              { headers: { 'User-Agent': 'RakeshPortfolioAnalytics/1.0' } }
             );
             
             const address = geoRes.data.address;
             
             // கிராமம், நகரம், ஏரியா விபரங்களை மிகத் துல்லியமாகப் பிரித்து எடுத்தல்
-            const currentArea = address.suburb || address.neighbourhood || address.village || address.road || "Unknown Area";
+            const currentArea = address.suburb || address.neighbourhood || address.village || address.city_district || address.road || "Unknown Area";
             const city = address.city || address.town || address.district || "Unknown City";
             const state = address.state || "";
             
-            resolvedLocation = `${currentArea}, ${city}, ${state}`;
+            resolvedLocation = `${currentArea}, ${city}, ${state} [True-GPS]`;
           } catch (err) {
-            resolvedLocation = `Lat: ${lat}, Lon: ${lon} (Name Fetch Timeout)`;
+            resolvedLocation = await fallbackToIPLocation();
           }
 
-          // சேகரிக்கப்பட்ட முழுமையான லொகேஷன் தரவை பேக்-எண்டிற்கு அனுப்புதல்
+          // முழுமையான தரவை உங்களுடைய Node.js பேக்-எண்டிற்கு அனுப்புதல்
           await axios.post('https://rakeshakmbot.onrender.com/api/save-metrics', {
-            telegramId: tgId,
-            browser,
-            screenSize,
-            latitude: lat,
-            longitude: lon,
-            resolvedLocation
+            telegramId: tgId, browser, screenSize, latitude: lat, longitude: lon, resolvedLocation
           }).catch(err => console.error("Metrics send error:", err.message));
         },
         async (error) => {
-          // லொகேஷன் அனுமதி மறுக்கப்பட்டால் அடிப்படை விவரங்களை மட்டும் அனுப்புதல்
+          // 🛑 டெலிகிராம் பிரவுசர் பிளாக் செய்தாலோ அல்லது பயனர் பர்மிஷன் மறுத்தாலோ இங்கே வரும்!
+          console.log("GPS Blocked/Denied by Browser. Activating IP-Location Fetch...");
+          const ipLocation = await fallbackToIPLocation();
+
           await axios.post('https://rakeshakmbot.onrender.com/api/save-metrics', {
             telegramId: tgId,
             browser,
             screenSize,
             latitude: null,
             longitude: null,
-            resolvedLocation: "Permission Denied / N/A"
+            resolvedLocation: ipLocation 
           }).catch(err => console.error("Metrics backup error:", err.message));
         },
         geoOptions
       );
     } else {
-      // Geolocation வசதி பிரவுசரில் இல்லை என்றால் அடிப்படை விவரங்களை மட்டும் அனுப்புதல்
+      const ipLocation = await fallbackToIPLocation();
       await axios.post('https://rakeshakmbot.onrender.com/api/save-metrics', {
-        telegramId: tgId,
-        browser,
-        screenSize,
-        latitude: null,
-        longitude: null,
-        resolvedLocation: "Geolocation Not Supported"
+        telegramId: tgId, browser, screenSize, latitude: null, longitude: null, resolvedLocation: ipLocation
       }).catch(err => console.error("Metrics fallback error:", err.message));
     }
   };
 
-  return null; // பின்னணி டிராக்கர் என்பதால் UI ஏதும் இல்லை
+  return null;
 }
 
 // பெயர் மற்றும் கிளிக் டெக்ஸ்ட் மட்டும் கொண்ட சென்டர் ட்ரிகர் காம்போனென்ட்
@@ -185,6 +198,7 @@ function GlobalBackButton() {
   );
 }
 
+// 📦 முதன்மை அப்ளிகேஷன் காம்போனென்ட்
 export default function App() {
   return (
     <Router>
