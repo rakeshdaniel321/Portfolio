@@ -1,5 +1,9 @@
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import axios from 'axios';
+
+// உங்களது காம்போனென்ட்கள் மற்றும் பக்கங்கள்
 import GoldCoins from './components/GoldCoins';
 import Home from './pages/Home';
 import DestinyAboutCard from './pages/DestinyAboutCard'; 
@@ -8,6 +12,92 @@ import Skills from './pages/Skills';
 import FlamesModal from './components/FlamesModal';
 import SidebarSocials from './components/SidebarSocials';
 import About from './pages/About';
+
+// 📊 அனலிட்டிக்ஸ் டிராக்கிங் செய்ய உதவும் ஒரு உட்புற காம்போனென்ட்
+function AnalyticsTracker() {
+  const location = useLocation();
+  const [userId, setUserId] = useState(null);
+  const [startTime] = useState(Date.now());
+
+  useEffect(() => {
+    let currentUserId = null;
+
+    // 1. டெலிகிராம் WebApp மூலம் பயனரின் தனித்துவமான ID-யைப் பெறுதல்
+    if (window.Telegram && window.Telegram.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand();
+      if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        currentUserId = tg.initDataUnsafe.user.id;
+        setUserId(currentUserId);
+        sendInitialMetrics(currentUserId);
+      }
+    }
+
+    // டெலிகிராம் இல்லாத சாதாரண பிரவுசர் என்றால் ஒரு தற்காலிக ID
+    if (!currentUserId) {
+      currentUserId = "WEB_" + Math.floor(100000 + Math.random() * 900000);
+      setUserId(currentUserId);
+      sendInitialMetrics(currentUserId);
+    }
+
+    // 2. பயனர் வெப்சைட்டை விட்டு வெளியேறும்போது இறுதி Screen Time-ஐ அனுப்புதல்
+    return () => {
+      const totalScreenTimeSec = Math.floor((Date.now() - startTime) / 1000);
+      if (currentUserId) {
+        navigator.sendBeacon(
+          'https://rakeshakmbot.onrender.com/api/update-screen-time',
+          JSON.stringify({ telegramId: currentUserId, screenTime: totalScreenTimeSec })
+        );
+      }
+    };
+  }, []);
+
+  // சாதனத்தின் திரையளவு, பிரவுசர் மற்றும் GPS விவரங்களைச் சேகரிக்கும் ஃபங்ஷன்
+  const sendInitialMetrics = async (tgId) => {
+    const browser = navigator.userAgent;
+    const screenSize = `${window.innerWidth}x${window.innerHeight}`;
+    let resolvedLocation = "Permission Denied / N/A";
+    let lat = null, lon = null;
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        lat = position.coords.latitude;
+        lon = position.coords.longitude;
+
+        try {
+          // OpenStreetMap API மூலம் லொகேஷனை கிராமம்/நகரமாக மாற்றுதல் (Reverse Geocoding)
+          const geoRes = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+          resolvedLocation = geoRes.data.display_name;
+        } catch (err) {
+          resolvedLocation = `Lat: ${lat}, Lon: ${lon} (Geocode Failed)`;
+        }
+
+        // சேகரிக்கப்பட்ட தரவை பேக்-எண்டிற்கு அனுப்புதல்
+        await axios.post('https://rakeshakmbot.onrender.com/api/save-metrics', {
+          telegramId: tgId,
+          browser,
+          screenSize,
+          latitude: lat,
+          longitude: lon,
+          resolvedLocation
+        });
+      }, () => {
+        // லொகேஷன் அனுமதி மறுக்கப்பட்டால் அடிப்படை விவரங்களை மட்டும் அனுப்புதல்
+        axios.post('https://rakeshakmbot.onrender.com/api/save-metrics', {
+          telegramId: tgId,
+          browser,
+          screenSize,
+          latitude: null,
+          longitude: null,
+          resolvedLocation: "Permission Denied"
+        });
+      });
+    }
+  };
+
+  return null; // இது ஒரு பின்னணி டிராக்கர் என்பதால் UI எதுவும் தேவையில்லை
+}
 
 // வட்ட வடிவம் இல்லாமல், பெயர் மற்றும் கிளிக் டெக்ஸ்ட் மட்டும் கொண்ட காம்போனென்ட்
 function CenterNavigationTrigger() {
@@ -19,7 +109,6 @@ function CenterNavigationTrigger() {
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center z-30 pointer-events-none">
-      {/* க்ளிக் செய்யக்கூடிய வகையில் pointer-events-auto சேர்க்கப்பட்டுள்ளது */}
       <button
         onClick={() => navigate('/here')}
         className="group flex flex-col items-center justify-center pointer-events-auto bg-transparent border-none outline-none focus:outline-none active:scale-95 transition-transform duration-200"
@@ -27,7 +116,7 @@ function CenterNavigationTrigger() {
       >
         {/* உங்கள் பெயர் - பெரிய மற்றும் தடிமனான பிரீமியம் எழுத்துக்களில் */}
         <h1 className="font-sans text-4xl md:text-5xl font-black uppercase tracking-wider text-white transition-colors duration-300 group-hover:text-red-500">
-          {/* பெயர் தேவைப்பட்டால் இங்கே சேர்க்கலாம் */}
+          RAKESH DANIEL
         </h1>
         
         {/* பெயருக்கு கீழே வரும் "click here" சிறிய உரைவடிவம் */}
@@ -61,13 +150,11 @@ export default function App() {
     <Router>
       <div className="min-h-screen bg-black text-white font-sans relative overflow-x-hidden select-none">
         
+        {/* லைவ் டிராக்கிங் சிஸ்டம் காம்போனென்ட் */}
+        <AnalyticsTracker />
+
         {/* அனிமேஷன் எஃபெக்ட்ஸ் */}
         <GoldCoins />
-        
-        {/* சோசியல் பார்கள் - இதன் உள்ளே லொகேஷன் செக் இருப்பதால், 
-          மொபைலில் ஹோம் பேஜ் தவிர வேறு எங்கும் டாப்-ல் டூப்ளிகேட்டாகத் தெரியாது!
-        */}
-        {/* <SidebarSocials /> */}
         
         {/* பேக் பட்டன் */}
         <GlobalBackButton />
