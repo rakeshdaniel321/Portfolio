@@ -60,7 +60,7 @@ export default function DestinyAboutCard() {
       
           <div className="bg-zinc-900/90 backdrop-blur-sm p-6 space-y-4 text-center">
            
-            <div className="space-y-1.5">
+            {/* <div className="space-y-1.5">
               <h3 className="text-[9px] font-mono text-red-500 uppercase tracking-widest font-black">
                  THE SOUL EXPRESSION
               </h3>
@@ -77,7 +77,7 @@ export default function DestinyAboutCard() {
               <p className="text-xs md:text-sm text-zinc-400 font-serif leading-relaxed px-2">
                 "வாழ்க்கையில் ஆடம்பரங்களை விட, அம்மா மற்றும் குடும்பத்தின் மகிழ்ச்சியே எனது முதல் இலக்கு."
               </p>
-            </div>
+            </div> */}
 
             
             <div className="pt-2">

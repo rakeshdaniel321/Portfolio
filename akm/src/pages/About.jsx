@@ -79,24 +79,13 @@ export default function About() {
             </p>
           </div>
 
-          {/* தமிழ் பகுதி (Bottom Panel - இப்போது தூய கறுப்பு பின்னணி மற்றும் வெள்ளை எழுத்துக்கள்) */}
-          {/* <div className="bg-black p-4 md:p-6 space-y-3">
-            <h2 className="text-sm md:text-base font-black uppercase tracking-wider border-b border-white/20 pb-1.5 text-zinc-200">
-              / தங்கமான மகன்
-            </h2>
-            <p className="text-xs md:text-sm text-zinc-300 leading-relaxed text-justify font-serif first-letter:text-3xl first-letter:font-black first-letter:float-left first-letter:mr-2 first-letter:text-white">
-              நான் சமூக ஊடகங்களைப் பயன்படுத்தாத, குடும்பத்தின் மீது மிகுந்த பொறுப்பும் பாசமும் கொண்ட ஒரு நேர்மையான மற்றும் ஒழுக்கமான மகன் ஆவேன்.
-            </p>
-            <p className="italic font-bold text-[11px] bg-white/5 p-2.5 rounded-xl border border-white/10 text-zinc-400">
-              "வாழ்க்கையில் ஆடம்பரங்களை விட, அம்மா மற்றும் குடும்பத்தின் மகிழ்ச்சியே எனது முதல் இலக்கு."
-            </p>
-          </div> */}
+         
 
         </div>
 
       </div>
 
-      {/* பலூன் பறப்பதற்கான அனிமேஷன் ஸ்டைல் ஷீட் */}
+    
       <style>{`
         @keyframes floatUp {
           0% {
